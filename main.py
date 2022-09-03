@@ -103,6 +103,26 @@ def get_weather(region, config):
     return weather, temp, max_temp, min_temp, wind_dir, sunrise, sunset, category, pm2p5, proposal
 
 
+def get_tianhang(config):
+    try:
+        key = config["tian_api"]
+        url = "http://api.tianapi.com/caihongpi/index?key={}".format(key)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                          'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36',
+            'Content-type': 'application/x-www-form-urlencoded'
+
+        }
+        response = get(url, headers=headers).json()
+        if response["code"] == 200:
+            chp = response["newslist"][0]["content"]
+        else:
+            chp = ""
+    except KeyError:
+        chp = ""
+    return chp
+
+
 def get_birthday(birthday, year, today):
     birthday_year = birthday.split("-")[0]
     # 判断是否为农历生日
@@ -154,7 +174,7 @@ def get_ciba():
 
 
 def send_message(to_user, access_token, region_name, weather, temp, wind_dir, note_ch, note_en, max_temp, min_temp,
-                 sunrise, sunset, category, pm2p5, proposal, config):
+                 sunrise, sunset, category, pm2p5, proposal, chp, config):
     url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token={}".format(access_token)
     week_list = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"]
     os.environ['TZ'] = 'Asia/Shanghai'
@@ -243,6 +263,10 @@ def send_message(to_user, access_token, region_name, weather, temp, wind_dir, no
                 "value": proposal,
                 "color": color("color_proposal", config)
             },
+            "chp": {
+                "value": chp,
+                "color":  color("color_chp", config)
+            },
 
         }
     }
@@ -298,10 +322,11 @@ def handler(event, context):
     if note_ch == "" and note_en == "":
         # 获取词霸每日金句
         note_ch, note_en = get_ciba()
+    chp = get_tianhang(config)
     # 公众号推送消息
     for user in users:
         send_message(user, accessToken, region, weather, temp, wind_dir, note_ch, note_en, max_temp, min_temp, sunrise,
-                     sunset, category, pm2p5, proposal, config)
+                     sunset, category, pm2p5, proposal, chp, config)
     os.system("pause")
 
 
