@@ -103,7 +103,6 @@ def get_weather(region, config):
     return weather, temp, max_temp, min_temp, wind_dir, sunrise, sunset, category, pm2p5, proposal
 
 
-
 def get_birthday(birthday, year, today):
     birthday_year = birthday.split("-")[0]
     # 判断是否为农历生日
@@ -243,10 +242,6 @@ def send_message(to_user, access_token, region_name, weather, temp, wind_dir, no
             "proposal": {
                 "value": proposal,
                 "color": color("color_proposal", config)
-            },
-            "chp": {
-                "value": chp,
-                "color":  color("color_chp", config)
             },
 
         }
